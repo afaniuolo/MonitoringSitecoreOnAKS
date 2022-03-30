@@ -1,0 +1,12 @@
+generatorOptions:
+  disableNameSuffixHash: true
+secretGenerator:
+- name: prometheus-grafana
+  files:
+  - admin-password
+  - admin-user
+- name: global-grafana-tls
+  files:
+    - tls/global-grafana/tls.key
+    - tls/global-grafana/tls.crt
+  type: kubernetes.io/tls

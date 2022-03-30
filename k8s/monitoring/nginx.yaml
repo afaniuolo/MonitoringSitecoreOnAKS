@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: prometheus-nginx-windows-node-exporter
+  namespace: monitoring
+  labels:
+    app: prometheus-node-exporter
+    jobLabel: node-exporter
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      release: prometheus
+      app: prometheus-node-exporter
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: prometheus-node-exporter
+        jobLabel: node-exporter
+        release: prometheus
+      annotations:
+        prometheus.io/scrape: "true" #Enable scraping for this pod 
+        prometheus.io/scheme: "http" #If the metrics endpoint is secured then you will need to set this to `https`, if not default ‘http’
+        prometheus.io/path: "/metrics" #If the metrics path is not /metrics, define it with this annotation. 
+        prometheus.io/port: "9100" #If port is not 9102 use this annotation
+    spec:
+      hostNetwork: false
+      containers:
+        - name: windows-metric-proxy
+          image: nginx-reverse-proxy
+          imagePullPolicy: Always
+          ports:
+            - name: metrics
+              containerPort: 9100
+              protocol: TCP
+          env:
+            - name: PROXY_HOSTIP
+              # this will get the current node's internal IP and forward metric scrapes to the windows-exporter service running on the node
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: PROXY_PORT
+              value: '9100'
+      securityContext:
+        runAsNonRoot: false
+      nodeSelector:
+        kubernetes.io/os: windows
