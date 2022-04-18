@@ -1,0 +1,1836 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [],
+            "type": "dashboard"
+          },
+          "type": "dashboard"
+        }
+      ]
+    },
+    "description": "Azure Monitor Container Insights - Pod and Container MetricsAzure Monitor for Containers sources collection of metrics as part of monitoring an AKS cluster. Out of the box, we can get dashboards for Node Level and Namespace level metrics in Grafana through App Insights and Log Analytics. This dashboard helps us to visualize pod level and container metric, and pod live logs.",
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "gnetId": 14891,
+    "graphTooltip": 0,
+    "id": 123,
+    "iteration": 1650291059194,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+      {
+        "collapsed": false,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 18,
+        "panels": [],
+        "title": "Pod CPU",
+        "type": "row"
+      },
+      {
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "RJArg-8nz"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto",
+              "filterable": false
+            },
+            "decimals": 2,
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "none"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Name"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 300
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "CpuLimit"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 80
+                },
+                {
+                  "id": "custom.align",
+                  "value": "center"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "CpuUsage"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 85
+                },
+                {
+                  "id": "custom.align",
+                  "value": "center"
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 21,
+          "w": 7,
+          "x": 0,
+          "y": 1
+        },
+        "id": 49,
+        "options": {
+          "footer": {
+            "fields": "",
+            "reducer": [
+              "sum"
+            ],
+            "show": false
+          },
+          "showHeader": true
+        },
+        "pluginVersion": "8.4.5",
+        "targets": [
+          {
+            "appInsights": {
+              "dimension": "none",
+              "metricName": "select",
+              "rawQuery": false,
+              "rawQueryString": "",
+              "timeColumn": "timestamp",
+              "timeGrain": "auto",
+              "valueColumn": ""
+            },
+            "azureLogAnalytics": {
+              "query": "KubePodInventory\n| where TimeGenerated > ago(2m)\n| where ClusterName == \"$AKS\"\n| where Namespace == \"$Namespace\"\n| summarize arg_max(TimeGenerated, *) by ContainerName\n| project Name, ContainerName\n| join kind = inner (\n    Perf\n    | where TimeGenerated > ago(2m)\n    | where ObjectName == 'K8SContainer'\n    | where CounterName == 'cpuLimitNanoCores'\n    | where InstanceName contains '$AKS'\n    | extend ContainerNameParts = split(InstanceName, '/')\n    | extend ContainerNamePartCount = array_length(ContainerNameParts)            \n    | extend PodUIDIndex = ContainerNamePartCount - 2, ContainerNameIndex = ContainerNamePartCount - 1 \n    | extend ContainerName = strcat(ContainerNameParts[PodUIDIndex], '/', ContainerNameParts[ContainerNameIndex])\n    | summarize arg_max(TimeGenerated, *) by ContainerName\n    | project ContainerName, CpuLimit=CounterValue\n    | join kind = inner (\n        Perf\n        | where TimeGenerated > ago(2m)\n        | where ObjectName == 'K8SContainer'\n        | where CounterName == 'cpuUsageNanoCores'\n        | where InstanceName contains '$AKS'\n        | extend ContainerNameParts = split(InstanceName, '/')\n        | extend ContainerNamePartCount = array_length(ContainerNameParts)            \n        | extend PodUIDIndex = ContainerNamePartCount - 2, ContainerNameIndex = ContainerNamePartCount - 1 \n        | extend ContainerName = strcat(ContainerNameParts[PodUIDIndex], '/', ContainerNameParts[ContainerNameIndex])\n        | summarize arg_max(TimeGenerated, *) by ContainerName\n        | project TimeGenerated, ContainerName, CpuUsage=CounterValue\n    ) on ContainerName\n) on ContainerName\n| order by Name asc\n| project Name, CpuLimit=(CpuLimit / 1000000), CpuUsage=(CpuUsage / 1000000)",
+              "resultFormat": "table",
+              "workspace": "$Workspace"
+            },
+            "azureMonitor": {
+              "aggOptions": [],
+              "dimensionFilter": "*",
+              "metricDefinition": "select",
+              "metricName": "select",
+              "metricNamespace": "select",
+              "resourceGroup": "select",
+              "resourceName": "select",
+              "timeGrain": "auto",
+              "timeGrains": [],
+              "top": "10"
+            },
+            "queryType": "Azure Log Analytics",
+            "refId": "A",
+            "subscription": "7b0bcc15-eef6-4181-b9fe-23bc213ce163"
+          }
+        ],
+        "title": "CPU Utlization - Current",
+        "type": "table"
+      },
+      {
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "RJArg-8nz"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "graph": false,
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": true,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "decimals": 2,
+            "mappings": [],
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "none"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 17,
+          "x": 7,
+          "y": 1
+        },
+        "id": 19,
+        "options": {
+          "graph": {},
+          "legend": {
+            "calcs": [
+              "mean",
+              "lastNotNull",
+              "max",
+              "min",
+              "sum"
+            ],
+            "displayMode": "table",
+            "placement": "right"
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "7.5.7",
+        "targets": [
+          {
+            "appInsights": {
+              "dimension": [
+                "none"
+              ],
+              "metricName": "select",
+              "rawQuery": false,
+              "rawQueryString": "",
+              "timeColumn": "timestamp",
+              "timeGrain": "auto",
+              "valueColumn": ""
+            },
+            "azureLogAnalytics": {
+              "query": "KubePodInventory\n| where $__timeFilter(TimeGenerated)\n| where ClusterName == \"$AKS\"\n| where Namespace == \"$Namespace\"\n| summarize arg_max(TimeGenerated, *) by ContainerName\n| project Name, ContainerName\n| join kind = inner (\n    Perf\n    | where $__timeFilter(TimeGenerated)\n    | where ObjectName == 'K8SContainer'\n    | where CounterName == 'cpuUsageNanoCores'\n    | where InstanceName contains '$AKS'\n    | extend ContainerNameParts = split(InstanceName, '/')\n    | extend ContainerNamePartCount = array_length(ContainerNameParts)            \n    | extend PodUIDIndex = ContainerNamePartCount - 2, ContainerNameIndex = ContainerNamePartCount - 1 \n    | extend ContainerName = strcat(ContainerNameParts[PodUIDIndex], '/', ContainerNameParts[ContainerNameIndex])\n    | project TimeGenerated, ContainerName, CounterValue\n) on ContainerName\n| order by TimeGenerated asc\n| project TimeGenerated, Name, CounterValue=(CounterValue / 1000000)",
+              "resultFormat": "time_series",
+              "workspace": "$Workspace"
+            },
+            "azureMonitor": {
+              "aggOptions": [],
+              "dimensionFilter": "*",
+              "dimensionFilters": [],
+              "metricDefinition": "select",
+              "metricName": "select",
+              "metricNamespace": "select",
+              "resourceGroup": "select",
+              "resourceName": "select",
+              "timeGrain": "auto",
+              "timeGrains": [],
+              "top": "10"
+            },
+            "insightsAnalytics": {
+              "query": "",
+              "resultFormat": "time_series"
+            },
+            "queryType": "Azure Log Analytics",
+            "refId": "A",
+            "subscription": "7b0bcc15-eef6-4181-b9fe-23bc213ce163"
+          }
+        ],
+        "title": "CPU Usage Per Pod ( in millicores )",
+        "transformations": [
+          {
+            "id": "labelsToFields",
+            "options": {
+              "valueLabel": "Name"
+            }
+          },
+          {
+            "id": "merge",
+            "options": {}
+          }
+        ],
+        "type": "timeseries"
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "RJArg-8nz"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent"
+          },
+          "overrides": []
+        },
+        "fill": 0,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 11,
+          "w": 17,
+          "x": 7,
+          "y": 11
+        },
+        "hiddenSeries": false,
+        "id": 20,
+        "legend": {
+          "alignAsTable": true,
+          "avg": false,
+          "current": true,
+          "max": false,
+          "min": false,
+          "rightSide": true,
+          "show": true,
+          "sort": "current",
+          "sortDesc": true,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 2,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "8.4.5",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "appInsights": {
+              "dimension": [
+                "none"
+              ],
+              "metricName": "select",
+              "rawQuery": false,
+              "rawQueryString": "",
+              "timeColumn": "timestamp",
+              "timeGrain": "auto",
+              "valueColumn": ""
+            },
+            "azureLogAnalytics": {
+              "query": "KubePodInventory\n| where $__timeFilter(TimeGenerated)\n| where ClusterName == \"$AKS\"\n| where Namespace == \"$Namespace\"\n| summarize arg_max(TimeGenerated, *) by ContainerName\n| project Name, ContainerName\n| join kind = inner (\n    Perf\n    | where $__timeFilter(TimeGenerated)\n    | where ObjectName == 'K8SContainer'\n    | where CounterName == 'cpuLimitNanoCores'\n    | where InstanceName contains '$AKS'\n    | extend ContainerNameParts = split(InstanceName, '/')\n    | extend ContainerNamePartCount = array_length(ContainerNameParts)            \n    | extend PodUIDIndex = ContainerNamePartCount - 2, ContainerNameIndex = ContainerNamePartCount - 1 \n    | extend ContainerName = strcat(ContainerNameParts[PodUIDIndex], '/', ContainerNameParts[ContainerNameIndex])\n    | summarize arg_max(TimeGenerated, *) by ContainerName\n    | project ContainerName, CpuLimit=CounterValue\n    | join kind = inner (\n        Perf\n        | where $__timeFilter(TimeGenerated)\n        | where ObjectName == 'K8SContainer'\n        | where CounterName == 'cpuUsageNanoCores'\n        | where InstanceName contains '$AKS'\n        | extend ContainerNameParts = split(InstanceName, '/')\n        | extend ContainerNamePartCount = array_length(ContainerNameParts)            \n        | extend PodUIDIndex = ContainerNamePartCount - 2, ContainerNameIndex = ContainerNamePartCount - 1 \n        | extend ContainerName = strcat(ContainerNameParts[PodUIDIndex], '/', ContainerNameParts[ContainerNameIndex])\n        | project TimeGenerated, ContainerName, CpuUsage=CounterValue\n    ) on ContainerName\n    | project TimeGenerated, ContainerName, CpuPercentage=(CpuUsage / CpuLimit) * 100\n) on ContainerName\n| order by TimeGenerated asc\n| project TimeGenerated, Name, CpuPercentage",
+              "resultFormat": "time_series",
+              "workspace": "$Workspace"
+            },
+            "azureMonitor": {
+              "aggOptions": [],
+              "dimensionFilter": "*",
+              "dimensionFilters": [],
+              "metricDefinition": "select",
+              "metricName": "select",
+              "metricNamespace": "select",
+              "resourceGroup": "select",
+              "resourceName": "select",
+              "timeGrain": "auto",
+              "timeGrains": [],
+              "top": "10"
+            },
+            "insightsAnalytics": {
+              "query": "",
+              "resultFormat": "time_series"
+            },
+            "queryType": "Azure Log Analytics",
+            "refId": "A",
+            "subscription": "7b0bcc15-eef6-4181-b9fe-23bc213ce163"
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "Percentaqe Pod CPU Usage over Pod CPU Limit",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "transformations": [
+          {
+            "id": "labelsToFields",
+            "options": {
+              "valueLabel": "Name"
+            }
+          },
+          {
+            "id": "merge",
+            "options": {}
+          }
+        ],
+        "type": "graph",
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "$$hashKey": "object:470",
+            "decimals": 2,
+            "format": "percent",
+            "logBase": 1,
+            "min": "0",
+            "show": true
+          },
+          {
+            "$$hashKey": "object:471",
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      },
+      {
+        "collapsed": false,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 22
+        },
+        "id": 22,
+        "panels": [],
+        "title": "Pod Memory Usage Metrics",
+        "type": "row"
+      },
+      {
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "RJArg-8nz"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto",
+              "filterable": false
+            },
+            "decimals": 2,
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "bits"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Name"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 400
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "MemLimit"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 90
+                },
+                {
+                  "id": "custom.align",
+                  "value": "center"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "MemUsage"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 95
+                },
+                {
+                  "id": "custom.align",
+                  "value": "center"
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 21,
+          "w": 7,
+          "x": 0,
+          "y": 23
+        },
+        "id": 50,
+        "options": {
+          "footer": {
+            "fields": "",
+            "reducer": [
+              "sum"
+            ],
+            "show": false
+          },
+          "showHeader": true
+        },
+        "pluginVersion": "8.4.5",
+        "targets": [
+          {
+            "appInsights": {
+              "dimension": "none",
+              "metricName": "select",
+              "rawQuery": false,
+              "rawQueryString": "",
+              "timeColumn": "timestamp",
+              "timeGrain": "auto",
+              "valueColumn": ""
+            },
+            "azureLogAnalytics": {
+              "query": "KubePodInventory\n| where TimeGenerated > ago(2m)\n| where ClusterName == \"$AKS\"\n| where Namespace == \"$Namespace\"\n| summarize arg_max(TimeGenerated, *) by ContainerName\n| project Name, ContainerName\n| join kind = inner (\n    Perf\n    | where TimeGenerated > ago(2m)\n    | where ObjectName == 'K8SContainer'\n    | where CounterName == 'memoryLimitBytes'\n    | where InstanceName contains '$AKS'\n    | extend ContainerNameParts = split(InstanceName, '/')\n    | extend ContainerNamePartCount = array_length(ContainerNameParts)            \n    | extend PodUIDIndex = ContainerNamePartCount - 2, ContainerNameIndex = ContainerNamePartCount - 1 \n    | extend ContainerName = strcat(ContainerNameParts[PodUIDIndex], '/', ContainerNameParts[ContainerNameIndex])\n    | summarize arg_max(TimeGenerated, *) by ContainerName\n    | project ContainerName, MemLimit=CounterValue\n) on ContainerName\n| order by Name asc\n| project Name, MemLimit",
+              "resultFormat": "table",
+              "workspace": "$Workspace"
+            },
+            "azureMonitor": {
+              "aggOptions": [],
+              "dimensionFilter": "*",
+              "metricDefinition": "select",
+              "metricName": "select",
+              "metricNamespace": "select",
+              "resourceGroup": "select",
+              "resourceName": "select",
+              "timeGrain": "auto",
+              "timeGrains": [],
+              "top": "10"
+            },
+            "queryType": "Azure Log Analytics",
+            "refId": "A",
+            "subscription": "7b0bcc15-eef6-4181-b9fe-23bc213ce163"
+          }
+        ],
+        "title": "Memory Usage (Current)",
+        "type": "table"
+      },
+      {
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "RJArg-8nz"
+        },
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "graph": false,
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": true,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "decimals": 2,
+            "mappings": [],
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "bits"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 11,
+          "w": 17,
+          "x": 7,
+          "y": 23
+        },
+        "id": 23,
+        "options": {
+          "graph": {},
+          "legend": {
+            "calcs": [
+              "mean",
+              "lastNotNull",
+              "max",
+              "min",
+              "sum"
+            ],
+            "displayMode": "table",
+            "placement": "right"
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "7.5.7",
+        "targets": [
+          {
+            "appInsights": {
+              "dimension": [
+                "none"
+              ],
+              "metricName": "select",
+              "rawQuery": false,
+              "rawQueryString": "",
+              "timeColumn": "timestamp",
+              "timeGrain": "auto",
+              "valueColumn": ""
+            },
+            "azureLogAnalytics": {
+              "query": "KubePodInventory\n| where $__timeFilter(TimeGenerated)\n| where ClusterName == \"$AKS\"\n| where Namespace == \"$Namespace\"\n| summarize arg_max(TimeGenerated, *) by ContainerName\n| project Name, ContainerName\n| join kind = inner (\n    Perf\n    | where $__timeFilter(TimeGenerated)\n    | where ObjectName == 'K8SContainer'\n    | where CounterName == 'memoryRssBytes'    \n    | where InstanceName contains '$AKS'\n    | extend ContainerNameParts = split(InstanceName, '/')\n    | extend ContainerNamePartCount = array_length(ContainerNameParts)            \n    | extend PodUIDIndex = ContainerNamePartCount - 2, ContainerNameIndex = ContainerNamePartCount - 1 \n    | extend ContainerName = strcat(ContainerNameParts[PodUIDIndex], '/', ContainerNameParts[ContainerNameIndex])\n    | project TimeGenerated, ContainerName, CounterValue\n) on ContainerName\n| order by TimeGenerated asc\n| project TimeGenerated, Name, CounterValue=(CounterValue)",
+              "resultFormat": "time_series",
+              "workspace": "$Workspace"
+            },
+            "azureMonitor": {
+              "aggOptions": [],
+              "dimensionFilter": "*",
+              "dimensionFilters": [],
+              "metricDefinition": "select",
+              "metricName": "select",
+              "metricNamespace": "select",
+              "resourceGroup": "select",
+              "resourceName": "select",
+              "timeGrain": "auto",
+              "timeGrains": [],
+              "top": "10"
+            },
+            "insightsAnalytics": {
+              "query": "",
+              "resultFormat": "time_series"
+            },
+            "queryType": "Azure Log Analytics",
+            "refId": "A",
+            "subscription": "7b0bcc15-eef6-4181-b9fe-23bc213ce163"
+          }
+        ],
+        "title": "RSS Memory Usage Per Pod",
+        "transformations": [
+          {
+            "id": "labelsToFields",
+            "options": {
+              "valueLabel": "Name"
+            }
+          },
+          {
+            "id": "merge",
+            "options": {}
+          }
+        ],
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "RJArg-8nz"
+        },
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "hideFrom": {
+                "graph": false,
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": true,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "bits"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 17,
+          "x": 7,
+          "y": 34
+        },
+        "id": 57,
+        "options": {
+          "graph": {},
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "7.5.7",
+        "targets": [
+          {
+            "appInsights": {
+              "dimension": [
+                "none"
+              ],
+              "metricName": "select",
+              "rawQuery": false,
+              "rawQueryString": "",
+              "timeColumn": "timestamp",
+              "timeGrain": "auto",
+              "valueColumn": ""
+            },
+            "azureLogAnalytics": {
+              "query": "KubePodInventory\n| where $__timeFilter(TimeGenerated)\n| where ClusterName == \"$AKS\"\n| where Namespace == \"$Namespace\"\n| summarize arg_max(TimeGenerated, *) by ContainerName\n| project Name, ContainerName\n| join kind = inner (\n    Perf\n    | where $__timeFilter(TimeGenerated)\n    | where ObjectName == 'K8SContainer'\n    | where CounterName == 'memoryWorkingSetBytes'    \n    | where InstanceName contains '$AKS'\n    | extend ContainerNameParts = split(InstanceName, '/')\n    | extend ContainerNamePartCount = array_length(ContainerNameParts)            \n    | extend PodUIDIndex = ContainerNamePartCount - 2, ContainerNameIndex = ContainerNamePartCount - 1 \n    | extend ContainerName = strcat(ContainerNameParts[PodUIDIndex], '/', ContainerNameParts[ContainerNameIndex])\n    | project TimeGenerated, ContainerName, CounterValue\n) on ContainerName\n| order by TimeGenerated asc\n| project TimeGenerated, Name, CounterValue=(CounterValue)",
+              "resultFormat": "time_series",
+              "workspace": "$Workspace"
+            },
+            "azureMonitor": {
+              "aggOptions": [],
+              "dimensionFilter": "*",
+              "dimensionFilters": [],
+              "metricDefinition": "select",
+              "metricName": "select",
+              "metricNamespace": "select",
+              "resourceGroup": "select",
+              "resourceName": "select",
+              "timeGrain": "auto",
+              "timeGrains": [],
+              "top": "10"
+            },
+            "insightsAnalytics": {
+              "query": "",
+              "resultFormat": "time_series"
+            },
+            "queryType": "Azure Log Analytics",
+            "refId": "A",
+            "subscription": "7b0bcc15-eef6-4181-b9fe-23bc213ce163"
+          }
+        ],
+        "title": "Memory Working Set by Pod",
+        "transformations": [
+          {
+            "id": "labelsToFields",
+            "options": {
+              "valueLabel": "Name"
+            }
+          },
+          {
+            "id": "merge",
+            "options": {}
+          }
+        ],
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "RJArg-8nz"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "graph": false,
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": true,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "decimals": 2,
+            "mappings": [],
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "percent"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 12,
+          "x": 0,
+          "y": 44
+        },
+        "id": 58,
+        "options": {
+          "graph": {},
+          "legend": {
+            "calcs": [
+              "mean",
+              "lastNotNull",
+              "max",
+              "min",
+              "sum"
+            ],
+            "displayMode": "table",
+            "placement": "right"
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "7.5.7",
+        "targets": [
+          {
+            "appInsights": {
+              "dimension": [
+                "none"
+              ],
+              "metricName": "select",
+              "rawQuery": false,
+              "rawQueryString": "",
+              "timeColumn": "timestamp",
+              "timeGrain": "auto",
+              "valueColumn": ""
+            },
+            "azureLogAnalytics": {
+              "query": "KubePodInventory\n| where $__timeFilter(TimeGenerated)\n| where ClusterName == \"$AKS\"\n| where Namespace == \"$Namespace\"\n| summarize arg_max(TimeGenerated, *) by ContainerName\n| project Name, ContainerName\n| join kind = inner (\n    Perf\n    | where $__timeFilter(TimeGenerated)\n    | where ObjectName == 'K8SContainer'\n    | where CounterName == 'memoryLimitBytes'\n    | where InstanceName contains '$AKS'\n    | extend ContainerNameParts = split(InstanceName, '/')\n    | extend ContainerNamePartCount = array_length(ContainerNameParts)            \n    | extend PodUIDIndex = ContainerNamePartCount - 2, ContainerNameIndex = ContainerNamePartCount - 1 \n    | extend ContainerName = strcat(ContainerNameParts[PodUIDIndex], '/', ContainerNameParts[ContainerNameIndex])\n    | summarize arg_max(TimeGenerated, *) by ContainerName\n    | project ContainerName, MemLimit=CounterValue\n    | join kind = inner (\n        Perf\n        | where $__timeFilter(TimeGenerated)\n        | where ObjectName == 'K8SContainer'\n        | where CounterName == 'memoryRssBytes'\n        | where InstanceName contains '$AKS'\n        | extend ContainerNameParts = split(InstanceName, '/')\n        | extend ContainerNamePartCount = array_length(ContainerNameParts)            \n        | extend PodUIDIndex = ContainerNamePartCount - 2, ContainerNameIndex = ContainerNamePartCount - 1 \n        | extend ContainerName = strcat(ContainerNameParts[PodUIDIndex], '/', ContainerNameParts[ContainerNameIndex])\n        | project TimeGenerated, ContainerName, MemUsage=CounterValue\n    ) on ContainerName\n    | project TimeGenerated, ContainerName, MemPercentage=(MemUsage / MemLimit) * 100\n) on ContainerName\n| order by TimeGenerated asc\n| project TimeGenerated, Name, MemPercentage",
+              "resultFormat": "time_series",
+              "workspace": "$Workspace"
+            },
+            "azureMonitor": {
+              "aggOptions": [],
+              "dimensionFilter": "*",
+              "dimensionFilters": [],
+              "metricDefinition": "select",
+              "metricName": "select",
+              "metricNamespace": "select",
+              "resourceGroup": "select",
+              "resourceName": "select",
+              "timeGrain": "auto",
+              "timeGrains": [],
+              "top": "10"
+            },
+            "insightsAnalytics": {
+              "query": "",
+              "resultFormat": "time_series"
+            },
+            "queryType": "Azure Log Analytics",
+            "refId": "A",
+            "subscription": "7b0bcc15-eef6-4181-b9fe-23bc213ce163"
+          }
+        ],
+        "title": "Percentage Memory(RSS) Usage against Memory Limit",
+        "transformations": [
+          {
+            "id": "labelsToFields",
+            "options": {
+              "valueLabel": "Name"
+            }
+          },
+          {
+            "id": "merge",
+            "options": {}
+          }
+        ],
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "RJArg-8nz"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "graph": false,
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": true,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "decimals": 2,
+            "mappings": [],
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "percent"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 12,
+          "x": 12,
+          "y": 44
+        },
+        "id": 24,
+        "options": {
+          "graph": {},
+          "legend": {
+            "calcs": [
+              "mean",
+              "lastNotNull",
+              "max",
+              "min",
+              "sum"
+            ],
+            "displayMode": "table",
+            "placement": "right"
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "7.5.7",
+        "targets": [
+          {
+            "appInsights": {
+              "dimension": [
+                "none"
+              ],
+              "metricName": "select",
+              "rawQuery": false,
+              "rawQueryString": "",
+              "timeColumn": "timestamp",
+              "timeGrain": "auto",
+              "valueColumn": ""
+            },
+            "azureLogAnalytics": {
+              "query": "KubePodInventory\n| where $__timeFilter(TimeGenerated)\n| where ClusterName == \"$AKS\"\n| where Namespace == \"$Namespace\"\n| summarize arg_max(TimeGenerated, *) by ContainerName\n| project Name, ContainerName\n| join kind = inner (\n    Perf\n    | where $__timeFilter(TimeGenerated)\n    | where ObjectName == 'K8SContainer'\n    | where CounterName == 'memoryLimitBytes'\n    | where InstanceName contains '$AKS'\n    | extend ContainerNameParts = split(InstanceName, '/')\n    | extend ContainerNamePartCount = array_length(ContainerNameParts)            \n    | extend PodUIDIndex = ContainerNamePartCount - 2, ContainerNameIndex = ContainerNamePartCount - 1 \n    | extend ContainerName = strcat(ContainerNameParts[PodUIDIndex], '/', ContainerNameParts[ContainerNameIndex])\n    | summarize arg_max(TimeGenerated, *) by ContainerName\n    | project ContainerName, MemLimit=CounterValue\n    | join kind = inner (\n        Perf\n        | where $__timeFilter(TimeGenerated)\n        | where ObjectName == 'K8SContainer'\n        | where CounterName == 'memoryWorkingSetBytes'\n        | where InstanceName contains '$AKS'\n        | extend ContainerNameParts = split(InstanceName, '/')\n        | extend ContainerNamePartCount = array_length(ContainerNameParts)            \n        | extend PodUIDIndex = ContainerNamePartCount - 2, ContainerNameIndex = ContainerNamePartCount - 1 \n        | extend ContainerName = strcat(ContainerNameParts[PodUIDIndex], '/', ContainerNameParts[ContainerNameIndex])\n        | project TimeGenerated, ContainerName, MemUsage=CounterValue\n    ) on ContainerName\n    | project TimeGenerated, ContainerName, MemPercentage=(MemUsage / MemLimit) * 100\n) on ContainerName\n| order by TimeGenerated asc\n| project TimeGenerated, Name, MemPercentage",
+              "resultFormat": "time_series",
+              "workspace": "$Workspace"
+            },
+            "azureMonitor": {
+              "aggOptions": [],
+              "dimensionFilter": "*",
+              "dimensionFilters": [],
+              "metricDefinition": "select",
+              "metricName": "select",
+              "metricNamespace": "select",
+              "resourceGroup": "select",
+              "resourceName": "select",
+              "timeGrain": "auto",
+              "timeGrains": [],
+              "top": "10"
+            },
+            "insightsAnalytics": {
+              "query": "",
+              "resultFormat": "time_series"
+            },
+            "queryType": "Azure Log Analytics",
+            "refId": "A",
+            "subscription": "7b0bcc15-eef6-4181-b9fe-23bc213ce163"
+          }
+        ],
+        "title": "Percentage Memory(Working Set) Usage against Memory Limit",
+        "transformations": [
+          {
+            "id": "labelsToFields",
+            "options": {
+              "valueLabel": "Name"
+            }
+          },
+          {
+            "id": "merge",
+            "options": {}
+          }
+        ],
+        "type": "timeseries"
+      },
+      {
+        "collapsed": false,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 54
+        },
+        "id": 38,
+        "panels": [],
+        "title": "Pod Overview",
+        "type": "row"
+      },
+      {
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "RJArg-8nz"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "left",
+              "displayMode": "auto"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Node"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 318
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 24,
+          "x": 0,
+          "y": 55
+        },
+        "id": 40,
+        "options": {
+          "footer": {
+            "fields": "",
+            "reducer": [
+              "sum"
+            ],
+            "show": false
+          },
+          "showHeader": true
+        },
+        "pluginVersion": "8.4.5",
+        "targets": [
+          {
+            "appInsights": {
+              "dimension": "none",
+              "metricName": "select",
+              "rawQuery": false,
+              "rawQueryString": "",
+              "timeColumn": "timestamp",
+              "timeGrain": "auto",
+              "valueColumn": ""
+            },
+            "azureLogAnalytics": {
+              "query": "KubePodInventory\n| where TimeGenerated > ago(30m)\n| where ClusterName == \"$AKS\"\n| where Namespace == \"$Namespace\"\n| summarize arg_max(TimeGenerated, *) by Name\n| project Pod=Name, Namespace, PodStatus, Node=Computer, PodRestartCount, ContainerRestartCount, PodStartTime, ControllerKind",
+              "resultFormat": "table",
+              "workspace": "$Workspace"
+            },
+            "azureMonitor": {
+              "aggOptions": [],
+              "dimensionFilter": "*",
+              "metricDefinition": "select",
+              "metricName": "select",
+              "metricNamespace": "select",
+              "resourceGroup": "select",
+              "resourceName": "select",
+              "timeGrain": "auto",
+              "timeGrains": [],
+              "top": "10"
+            },
+            "queryType": "Azure Log Analytics",
+            "refId": "A",
+            "subscription": "7b0bcc15-eef6-4181-b9fe-23bc213ce163"
+          }
+        ],
+        "title": "Overview",
+        "type": "table"
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "RJArg-8nz"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "links": []
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 9,
+          "w": 6,
+          "x": 0,
+          "y": 62
+        },
+        "hiddenSeries": false,
+        "id": 42,
+        "legend": {
+          "alignAsTable": true,
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "rightSide": true,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "8.4.5",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "appInsights": {
+              "dimension": "none",
+              "metricName": "select",
+              "rawQuery": false,
+              "rawQueryString": "",
+              "timeColumn": "timestamp",
+              "timeGrain": "auto",
+              "valueColumn": ""
+            },
+            "azureLogAnalytics": {
+              "query": "KubePodInventory\n| where TimeGenerated > ago(2m)\n| where ClusterName == \"$AKS\"\n| summarize arg_max(TimeGenerated, *) by Name\n| summarize qtd=count() by Namespace\n| project now(), Namespace, qtd",
+              "resultFormat": "time_series",
+              "workspace": "$Workspace"
+            },
+            "azureMonitor": {
+              "aggOptions": [],
+              "dimensionFilter": "*",
+              "metricDefinition": "select",
+              "metricName": "select",
+              "metricNamespace": "select",
+              "resourceGroup": "select",
+              "resourceName": "select",
+              "timeGrain": "auto",
+              "timeGrains": [],
+              "top": "10"
+            },
+            "queryType": "Azure Log Analytics",
+            "refId": "A",
+            "subscription": "7b0bcc15-eef6-4181-b9fe-23bc213ce163"
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "Pods per Namespaces",
+        "tooltip": {
+          "shared": false,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "mode": "series",
+          "show": false,
+          "values": [
+            "total"
+          ]
+        },
+        "yaxes": [
+          {
+            "$$hashKey": "object:355",
+            "decimals": 0,
+            "format": "none",
+            "logBase": 1,
+            "min": "0",
+            "show": true
+          },
+          {
+            "$$hashKey": "object:356",
+            "format": "none",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "RJArg-8nz"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "links": []
+          },
+          "overrides": []
+        },
+        "fill": 0,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 9,
+          "w": 18,
+          "x": 6,
+          "y": 62
+        },
+        "hiddenSeries": false,
+        "id": 44,
+        "legend": {
+          "alignAsTable": true,
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "rightSide": true,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 2,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "8.4.5",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "appInsights": {
+              "dimension": "none",
+              "metricName": "select",
+              "rawQuery": false,
+              "rawQueryString": "",
+              "timeColumn": "timestamp",
+              "timeGrain": "auto",
+              "valueColumn": ""
+            },
+            "azureLogAnalytics": {
+              "query": "KubePodInventory\n| where $__timeFilter(TimeGenerated)\n| where ClusterName == \"$AKS\"\n| summarize count() by TimeGenerated, Namespace\n| order by TimeGenerated asc",
+              "resultFormat": "time_series",
+              "workspace": "$Workspace"
+            },
+            "azureMonitor": {
+              "aggOptions": [],
+              "dimensionFilter": "*",
+              "metricDefinition": "select",
+              "metricName": "select",
+              "metricNamespace": "select",
+              "resourceGroup": "select",
+              "resourceName": "select",
+              "timeGrain": "auto",
+              "timeGrains": [],
+              "top": "10"
+            },
+            "queryType": "Azure Log Analytics",
+            "refId": "A",
+            "subscription": "7b0bcc15-eef6-4181-b9fe-23bc213ce163"
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "Pod Count by Namespace",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      },
+      {
+        "collapsed": false,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 71
+        },
+        "id": 60,
+        "panels": [],
+        "title": "POD Live Logs",
+        "type": "row"
+      },
+      {
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "RJArg-8nz"
+        },
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 19,
+          "w": 24,
+          "x": 0,
+          "y": 72
+        },
+        "id": 62,
+        "options": {
+          "footer": {
+            "fields": "",
+            "reducer": [
+              "sum"
+            ],
+            "show": false
+          },
+          "showHeader": true
+        },
+        "pluginVersion": "8.4.5",
+        "targets": [
+          {
+            "azureLogAnalytics": {
+              "query": "let container_id = KubePodInventory | where Name == '$Pod' and ContainerID != '' | summarize count() by ContainerID | project ContainerID;\r\nContainerLog\r\n| where ContainerID in (container_id) and $__timeFilter(TimeGenerated)\r\n| order by TimeGenerated desc\r\n| project TimeGenerated, LogEntry",
+              "resource": "/subscriptions/3bc639b9-228f-40a6-b5d1-055cc84bb656/resourceGroups/sc102"
+            },
+            "azureMonitor": {
+              "dimensionFilters": [],
+              "timeGrain": "auto"
+            },
+            "datasource": {
+              "type": "grafana-azure-monitor-datasource",
+              "uid": "RJArg-8nz"
+            },
+            "queryType": "Azure Log Analytics",
+            "refId": "A",
+            "subscription": "3bc639b9-228f-40a6-b5d1-055cc84bb656"
+          }
+        ],
+        "title": "Live Logs",
+        "type": "table"
+      }
+    ],
+    "refresh": false,
+    "schemaVersion": 35,
+    "style": "dark",
+    "tags": [
+    ],
+    "templating": {
+      "list": [
+        {
+            "current": {
+              "selected": false,
+              "text": "Azure Monitor",
+              "value": "Azure Monitor"
+            },
+            "hide": 0,
+            "includeAll": false,
+            "label": "Datasource",
+            "multi": false,
+            "name": "ds",
+            "options": [],
+            "query": "grafana-azure-monitor-datasource",
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "type": "datasource"
+          },
+        {
+          "current": {
+            "selected": false,
+            "text": "",
+            "value": ""
+          },
+          "datasource": {
+            "type": "grafana-azure-monitor-datasource",
+            "uid": "${ds}"
+          },
+          "definition": "",
+          "hide": 0,
+          "includeAll": false,
+          "label": "Subscription",
+          "multi": false,
+          "name": "sub",
+          "options": [],
+          "query": {
+            "grafanaTemplateVariableFn": {
+              "kind": "SubscriptionsQuery",
+              "rawQuery": "Subscriptions()"
+            },
+            "queryType": "Grafana Template Variable Function",
+            "refId": "A",
+            "subscription": ""
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        },
+        {
+          "current": {
+            "selected": false,
+            "text": "",
+            "value": ""
+          },
+          "datasource": {
+            "type": "grafana-azure-monitor-datasource",
+            "uid": "${ds}"
+          },
+          "definition": "workspaces()",
+          "hide": 0,
+          "includeAll": false,
+          "multi": false,
+          "name": "Workspace",
+          "options": [],
+          "query": {
+            "grafanaTemplateVariableFn": {
+              "kind": "WorkspacesQuery",
+              "rawQuery": "workspaces($sub)",
+              "subscription": "$sub"
+            },
+            "queryType": "Grafana Template Variable Function",
+            "refId": "A",
+            "subscription": "$sub"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "tagValuesQuery": "",
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "current": {
+            "selected": false,
+            "text": "",
+            "value": ""
+          },
+          "datasource": {
+            "type": "grafana-azure-monitor-datasource",
+            "uid": "${ds}"
+          },
+          "definition": "ResourceGroups()",
+          "hide": 0,
+          "includeAll": false,
+          "multi": false,
+          "name": "ResourceGroups",
+          "options": [],
+          "query": {
+            "grafanaTemplateVariableFn": {
+              "kind": "ResourceGroupsQuery",
+              "rawQuery": "ResourceGroups()",
+              "subscription": "$sub"
+            },
+            "queryType": "Grafana Template Variable Function",
+            "refId": "A",
+            "subscription": "$sub"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "tagValuesQuery": "",
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "current": {
+            "selected": false,
+            "text": "",
+            "value": ""
+          },
+          "datasource": {
+            "type": "grafana-azure-monitor-datasource",
+            "uid": "${ds}"
+          },
+          "definition": "ResourceNames($ResourceGroups, Microsoft.ContainerService/managedClusters)",
+          "hide": 0,
+          "includeAll": false,
+          "multi": false,
+          "name": "AKS",
+          "options": [],
+          "query": {
+            "grafanaTemplateVariableFn": {
+              "kind": "ResourceNamesQuery",
+              "metricDefinition": "Microsoft.ContainerService/managedClusters",
+              "rawQuery": "ResourceNames($ResourceGroups, Microsoft.ContainerService/managedClusters)",
+              "resourceGroup": "$ResourceGroups",
+              "subscription": "$sub"
+            },
+            "queryType": "Grafana Template Variable Function",
+            "refId": "A",
+            "subscription": "$sub"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "tagValuesQuery": "",
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "current": {
+            "selected": false,
+            "text": "",
+            "value": ""
+          },
+          "datasource": {
+            "type": "grafana-azure-monitor-datasource",
+            "uid": "${ds}"
+          },
+          "definition": "KubePodInventory | where ClusterName == \"$AKS\" | summarize count() by Namespace | project Namespace",
+          "description": "KubePodInventory | where ClusterName == \"$AKS\" | summarize count() by Namespace | project Namespace",
+          "hide": 0,
+          "includeAll": false,
+          "multi": false,
+          "name": "Namespace",
+          "options": [],
+          "query": {
+            "azureLogAnalytics": {
+              "query": "KubePodInventory | where ClusterName == \"$AKS\" | summarize count() by Namespace | project Namespace",
+              "resource": "$Workspace"
+            },
+            "queryType": "Azure Log Analytics",
+            "refId": "A",
+            "subscription": "$sub"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "tagValuesQuery": "",
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "current": {
+            "selected": false,
+            "text": "",
+            "value": ""
+          },
+          "datasource": {
+            "type": "grafana-azure-monitor-datasource",
+            "uid": "${ds}"
+          },
+          "definition": "KubePodInventory | where ClusterName == \"$AKS\" and Namespace == \"$Namespace\" | summarize count() by Name | project Name",
+          "description": "KubePodInventory | where ClusterName == \"$AKS\" and Namespace == \"$Namespace\" | summarize count() by Name | project Name",
+          "hide": 0,
+          "includeAll": false,
+          "multi": false,
+          "name": "Pod",
+          "options": [],
+          "query": {
+            "azureLogAnalytics": {
+              "query": "KubePodInventory | where ClusterName == \"$AKS\" and Namespace == \"$Namespace\" | summarize count() by Name | project Name",
+              "resource": "$Workspace"
+            },
+            "queryType": "Azure Log Analytics",
+            "refId": "A",
+            "subscription": "$sub"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "tagValuesQuery": "",
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        }
+      ]
+    },
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": [
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ]
+    },
+    "timezone": "",
+    "title": "Pod Overview for AKS",
+    "uid": "rD8loTpLs",
+    "version": 8,
+    "weekStart": ""
+  }
