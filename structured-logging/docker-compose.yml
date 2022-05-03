@@ -1,0 +1,13 @@
+version: "2.4"
+
+services:
+
+  structuredlogging:
+    image: ${REGISTRY}${COMPOSE_PROJECT_NAME}-structuredlogging:${VERSION:-latest}
+    build:
+      context: .
+      args:
+        BASE_IMAGE: ${SOLUTION_BASE_IMAGE}
+        BUILD_IMAGE: ${SOLUTION_BUILD_IMAGE}
+        BUILD_CONFIGURATION: ${BUILD_CONFIGURATION}
+    scale: 0
