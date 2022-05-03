@@ -38,4 +38,3 @@ WORKDIR C:\module
 COPY --from=builder C:\out\website .\cm\content\
 COPY --from=builder C:\out\website .\cd\content\
 COPY --from=builder C:\out\website .\prc\content\
-COPY --from=builder C:\out\website .\rep\content\
