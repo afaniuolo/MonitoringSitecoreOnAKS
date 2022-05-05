@@ -28,13 +28,42 @@ RUN nuget restore
 COPY src\ .\src\
 
 # Build website with file publish
-RUN msbuild .\src\Foundation\StructuredLogging\code\MonitoringSitecoreOnAKS.Foundation.StructuredLogging.csproj /p:Configuration=$env:BUILD_CONFIGURATION /p:DeployOnBuild=True /p:DeployDefaultTarget=WebPublish /p:WebPublishMethod=FileSystem /p:PublishUrl=C:\out\website
+RUN msbuild .\src\Foundation\StructuredLogging\code\MonitoringSitecoreOnAKS.Foundation.StructuredLogging.csproj /p:Configuration=$env:BUILD_CONFIGURATION /p:DeployOnBuild=True /p:DeployDefaultTarget=WebPublish /p:WebPublishMethod=FileSystem /p:PublishUrl=C:\out\log4net
+
+# Install nuget package locally for Serilog.Formatting.Compact
+RUN nuget install Serilog.Formatting.Compact -Version 1.1.0 -OutputDirectory C:\nuget\packages
+RUN Invoke-Expression 'robocopy C:\nuget\packages\Serilog.Formatting.Compact.1.1.0\lib\netstandard2.0 C:\out\serilog'  
+
+# Copy module files
+COPY module\ C:\module\
 
 FROM ${BASE_IMAGE}
 
 WORKDIR C:\module
 
 # Copy final build artifacts
-COPY --from=builder C:\out\website .\cm\content\
-COPY --from=builder C:\out\website .\cd\content\
-COPY --from=builder C:\out\website .\prc\content\
+COPY --from=builder C:\out\log4net .\cm\content\
+COPY --from=builder C:\out\log4net .\cd\content\
+COPY --from=builder C:\out\log4net .\prc\content\
+COPY --from=builder C:\out\serilog .\id\content\
+COPY --from=builder C:\module\id\content .\id\content\
+COPY --from=builder C:\out\serilog .\xdbautomationworker\content\
+COPY --from=builder C:\module\xdbautomationworker\content .\xdbautomationworker\content\
+COPY --from=builder C:\out\serilog .\cortexprocessing\content\
+COPY --from=builder C:\module\cortexprocessing\content .\cortexprocessing\content\
+COPY --from=builder C:\out\serilog .\cortexprocessingworker\content\
+COPY --from=builder C:\module\cortexprocessingworker\content .\cortexprocessingworker\content\
+COPY --from=builder C:\out\serilog .\cortexreporting\content\
+COPY --from=builder C:\module\cortexreporting\content .\cortexreporting\content\
+COPY --from=builder C:\out\serilog .\xdbautomation\content\
+COPY --from=builder C:\module\xdbautomation\content .\xdbautomation\content\
+COPY --from=builder C:\out\serilog .\xdbautomationrpt\content\
+COPY --from=builder C:\module\xdbautomationrpt\content .\xdbautomationrpt\content\
+COPY --from=builder C:\out\serilog .\xdbcollection\content\
+COPY --from=builder C:\module\xdbcollection\content .\xdbcollection\content\
+COPY --from=builder C:\out\serilog .\xdbrefdata\content\
+COPY --from=builder C:\module\xdbrefdata\content .\xdbrefdata\content\
+COPY --from=builder C:\out\serilog .\xdbsearch\content\
+COPY --from=builder C:\module\xdbsearch\content .\xdbsearch\content\
+COPY --from=builder C:\out\serilog .\xdbsearchworker\content\
+COPY --from=builder C:\module\xdbsearchworker\content .\xdbsearchworker\content\
