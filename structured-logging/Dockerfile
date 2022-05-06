@@ -30,6 +30,15 @@ COPY src\ .\src\
 # Build website with file publish
 RUN msbuild .\src\Foundation\StructuredLogging\code\MonitoringSitecoreOnAKS.Foundation.StructuredLogging.csproj /p:Configuration=$env:BUILD_CONFIGURATION /p:DeployOnBuild=True /p:DeployDefaultTarget=WebPublish /p:WebPublishMethod=FileSystem /p:PublishUrl=C:\out\log4net
 
+RUN Invoke-Expression 'robocopy C:\out\log4net C:\out\cm /s'; `
+    (Get-Content C:\out\cm\App_Config\Include\Foundation\MonitoringSitecoreOnAKS.Foundation.StructuredLogging.config) -Replace '###ROLE###', 'CM' | Set-Content C:\out\cm\App_Config\Include\Foundation\MonitoringSitecoreOnAKS.Foundation.StructuredLogging.config
+
+RUN Invoke-Expression 'robocopy C:\out\log4net C:\out\cd /s'; `
+    (Get-Content C:\out\cd\App_Config\Include\Foundation\MonitoringSitecoreOnAKS.Foundation.StructuredLogging.config) -Replace '###ROLE###', 'CD' | Set-Content C:\out\cd\App_Config\Include\Foundation\MonitoringSitecoreOnAKS.Foundation.StructuredLogging.config
+
+RUN Invoke-Expression 'robocopy C:\out\log4net C:\out\prc /s'; `
+    (Get-Content C:\out\prc\App_Config\Include\Foundation\MonitoringSitecoreOnAKS.Foundation.StructuredLogging.config) -Replace '###ROLE###', 'PRC' | Set-Content C:\out\prc\App_Config\Include\Foundation\MonitoringSitecoreOnAKS.Foundation.StructuredLogging.config
+
 # Install nuget package locally for Serilog.Formatting.Compact
 RUN nuget install Serilog.Formatting.Compact -Version 1.1.0 -OutputDirectory C:\nuget\packages
 RUN Invoke-Expression 'robocopy C:\nuget\packages\Serilog.Formatting.Compact.1.1.0\lib\netstandard2.0 C:\out\serilog'  
@@ -39,12 +48,15 @@ COPY module\ C:\module\
 
 FROM ${BASE_IMAGE}
 
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
 WORKDIR C:\module
 
 # Copy final build artifacts
-COPY --from=builder C:\out\log4net .\cm\content\
-COPY --from=builder C:\out\log4net .\cd\content\
-COPY --from=builder C:\out\log4net .\prc\content\
+COPY --from=builder C:\out\cm .\cm\content\
+COPY --from=builder C:\out\cd .\cd\content\
+COPY --from=builder C:\out\prc .\prc\content\
+
 COPY --from=builder C:\out\serilog .\id\content\
 COPY --from=builder C:\module\id\content .\id\content\
 COPY --from=builder C:\out\serilog .\xdbautomationworker\content\
