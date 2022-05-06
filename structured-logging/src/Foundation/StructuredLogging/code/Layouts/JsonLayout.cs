@@ -5,6 +5,7 @@ using log4net.Layout;
 using log4net.spi;
 using MonitoringSitecoreOnAKS.Foundation.StructuredLogging.Constants;
 using MonitoringSitecoreOnAKS.Foundation.StructuredLogging.Extensions;
+using MonitoringSitecoreOnAKS.Foundation.StructuredLogging.Settings;
 using Newtonsoft.Json;
 
 namespace MonitoringSitecoreOnAKS.Foundation.StructuredLogging.Layouts
@@ -39,6 +40,8 @@ namespace MonitoringSitecoreOnAKS.Foundation.StructuredLogging.Layouts
             dictionary.Add(MessageProperties.MessageText, loggingEvent.RenderedMessage);
             dictionary.Add(MessageProperties.LogLevel, loggingEvent.Level.Name);
             dictionary.Add(MessageProperties.LoggerName, loggingEvent.LoggerName);
+            dictionary.Add(MessageProperties.LogType, LoggingSettings.LogType);
+            dictionary.Add(MessageProperties.ServerRole, LoggingSettings.Role);
         }
 
         private void SetExceptionData(Dictionary<string, object> dictionary, LoggingEvent loggingEvent)

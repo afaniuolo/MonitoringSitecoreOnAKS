@@ -19,5 +19,7 @@
 	    public const string CorrelationId = "correlation.id";
 	    public const string ProcessId = "process.id";
 	    public const string LoggerName = "logger.name";
-	}
+	    public const string LogType = "logtype";
+	    public const string ServerRole = "role";
+    }
 }
