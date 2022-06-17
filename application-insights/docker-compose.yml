@@ -1,0 +1,12 @@
+version: "2.4"
+
+services:
+
+  applicationinsights:
+    image: ${REGISTRY}${COMPOSE_PROJECT_NAME}-applicationinsights:${VERSION:-latest}
+    build:
+      context: .
+      args:
+        BASE_IMAGE: ${SOLUTION_BASE_IMAGE}
+        BUILD_IMAGE: ${SOLUTION_BUILD_IMAGE}
+    scale: 0

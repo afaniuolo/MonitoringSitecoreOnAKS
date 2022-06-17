@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Settings>
+  <Serilog>
+    <Using>
+      <AppInsightsAssembly>Sitecore.XConnect.Logging.Serilog.AppInsights</AppInsightsAssembly>
+    </Using>
+    <WriteTo>
+      <ApplicationInsightsSink>
+        <Name>SitecoreApplicationInsightsSink</Name>
+        <Args>
+          <!--
+            The key used to read the App Insights instrumentation key from AppSettings.config.
+
+            Default value: AppInsightsKey
+          -->
+          <!--instrumentationKeyAppSettingKey>AppInsightsKey</instrumentationKeyAppSettingKey-->
+
+          <!--
+            Indicating whether developer mode of telemetry transmission is enabled.
+
+            Allowed values: True, False
+            Default value: False
+          -->
+          <developerMode>False</developerMode>
+
+          <!--
+            The maximum number of telemetry items will accumulate in a memory before the telemetry channel
+            serializing them for transmission to Application Insights.
+
+            Default value: 5
+          -->
+          <!--maxBuffer>5</maxBuffer-->
+
+          <!--
+            The minimum log level to restrict to.
+
+            Allowed values: Verbose, Debug, Information, Warning, Error, Fatal
+            Default value: Warning
+          -->
+          <!--minimumLevel>Warning</minimumLevel-->
+
+          <!--
+            The sending interval, in seconds.
+            Once the interval expires, the telemetry channel serializes the accumulated telemetry items
+            for transmission and sends it over the wire.
+
+            Default value: 5
+          -->
+          <!--sendingInterval>5</sendingInterval-->
+        </Args>
+      </ApplicationInsightsSink>
+    </WriteTo>
+  </Serilog>
+</Settings>

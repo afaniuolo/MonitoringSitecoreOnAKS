@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Settings>
+  <Serilog>
+    <Using>
+      <TraceSinkAssembly>Serilog.Sinks.Trace</TraceSinkAssembly>
+    </Using>
+    <WriteTo>
+      <TraceSink>
+        <Name>Trace</Name>
+        <Args>
+            <restrictedToMinimumLevel>Warning</restrictedToMinimumLevel>
+            <outputTemplate>{Message}{NewLine}{Exception}</outputTemplate>
+        </Args>
+      </TraceSink>
+    </WriteTo>
+  </Serilog>
+</Settings>

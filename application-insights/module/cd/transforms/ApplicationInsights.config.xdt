@@ -1,0 +1,208 @@
+<ApplicationInsights xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings" xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <TelemetryInitializers xdt:Transform="InsertIfMissing">
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.DependencyCollector.HttpDependenciesParsingTelemetryInitializer, Microsoft.AI.DependencyCollector" />
+  </TelemetryInitializers>
+  <TelemetryModules xdt:Transform="InsertIfMissing">
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.DependencyCollector.DependencyTrackingTelemetryModule, Microsoft.AI.DependencyCollector">
+      <ExcludeComponentCorrelationHttpHeadersOnDomains>
+        <!-- 
+        Requests to the following hostnames will not be modified by adding correlation headers.         
+        Add entries here to exclude additional hostnames.
+        NOTE: this configuration will be lost upon NuGet upgrade.
+        -->
+        <Add>core.windows.net</Add>
+        <Add>core.chinacloudapi.cn</Add>
+        <Add>core.cloudapi.de</Add>
+        <Add>core.usgovcloudapi.net</Add>
+      </ExcludeComponentCorrelationHttpHeadersOnDomains>
+      <IncludeDiagnosticSourceActivities>
+        <Add>Microsoft.Azure.EventHubs</Add>
+        <Add>Microsoft.Azure.ServiceBus</Add>
+      </IncludeDiagnosticSourceActivities>
+    </Add>
+  </TelemetryModules>
+  <ApplicationIdProvider xdt:Transform="InsertIfMissing" Type="Microsoft.ApplicationInsights.Extensibility.Implementation.ApplicationId.ApplicationInsightsApplicationIdProvider, Microsoft.ApplicationInsights"/>
+  <TelemetryModules xdt:Transform="InsertIfMissing">
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Extensibility.PerfCounterCollector.PerformanceCollectorModule, Microsoft.AI.PerfCounterCollector">
+      <!--
+      Use the following syntax here to collect additional performance counters:
+      
+      <Counters>
+        <Add PerformanceCounter="\Process(??APP_WIN32_PROC??)\Handle Count" ReportAs="Process handle count" />
+        ...
+      </Counters>
+      
+      PerformanceCounter must be either \CategoryName(InstanceName)\CounterName or \CategoryName\CounterName
+      
+      NOTE: performance counters configuration will be lost upon NuGet upgrade.
+      
+      The following placeholders are supported as InstanceName:
+        ??APP_WIN32_PROC?? - instance name of the application process  for Win32 counters.
+        ??APP_W3SVC_PROC?? - instance name of the application IIS worker process for IIS/ASP.NET counters.
+        ??APP_CLR_PROC?? - instance name of the application CLR process for .NET counters.
+      -->
+    </Add>
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Extensibility.PerfCounterCollector.QuickPulse.QuickPulseTelemetryModule, Microsoft.AI.PerfCounterCollector" />
+  </TelemetryModules>
+
+  <TelemetryProcessors xdt:Transform="Remove"/>
+  <TelemetrySinks xdt:Transform="InsertIfMissing">
+  </TelemetrySinks>
+
+  <TelemetrySinks xdt:Transform="InsertIfMissing">
+    <Add Name="default" xdt:Transform="InsertIfMissing">
+    </Add>
+  </TelemetrySinks>
+
+  <TelemetrySinks>
+    <Add Name="default" xdt:Transform="InsertIfMissing">
+      <!-- 
+    QuickPulse telemetry processor must always be the first telemetry processor.
+    There is no syntax to allow insertion in the beginning of the list for when there are no siblings (we only have InsertBefore and InsertAfter), so do a trick:
+    1. Remove all previously existing QuickPulse telemetry processors (if any)
+    2. Add QuickPulse telemetry processor as the last telemetry processor
+    3. Add QuickPulse telemetry processor as the first telemetry processor (we can now use InsertBefore because we know there's at least one sibling present)
+    4. Remove the last QuickPulse telemetry processor
+    
+    Note that we have a default namespace in ApplicationInsights.config, and since XDT won't allow us to specify the namespace map, we'll have to use local-name() in XPath expressions
+  -->
+
+      <TelemetryProcessors xdt:Transform="InsertIfMissing">
+        <Add xdt:Transform="RemoveAll" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Extensibility.PerfCounterCollector.QuickPulse.QuickPulseTelemetryProcessor, Microsoft.AI.PerfCounterCollector" />
+        <Add xdt:Transform="Insert" Type="Microsoft.ApplicationInsights.Extensibility.PerfCounterCollector.QuickPulse.QuickPulseTelemetryProcessor, Microsoft.AI.PerfCounterCollector" />
+      </TelemetryProcessors>
+
+      <Add xdt:Transform="InsertBefore(/*[local-name()='ApplicationInsights']/*[local-name()='TelemetrySinks']/*[local-name()='Add'][1]/*[local-name()='TelemetryProcessors']/*[local-name()='Add'][1])" Type="Microsoft.ApplicationInsights.Extensibility.PerfCounterCollector.QuickPulse.QuickPulseTelemetryProcessor, Microsoft.AI.PerfCounterCollector" />
+
+      <Add xdt:Transform="Remove" xdt:Locator="XPath(/*[local-name()='ApplicationInsights']/*[local-name()='TelemetrySinks']/*[local-name()='Add'][1]/*[local-name()='TelemetryProcessors']/*[local-name()='Add' and starts-with(./@Type,'Microsoft.ApplicationInsights.Extensibility.PerfCounterCollector.QuickPulse.QuickPulseTelemetryProcessor') and contains(./@Type,' Microsoft.AI.PerfCounterCollector')][last()])"/>
+
+    </Add>
+  </TelemetrySinks>
+  <TelemetryInitializers xdt:Transform="InsertIfMissing">
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Web.WebTestTelemetryInitializer, Microsoft.AI.Web" />
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Web.SyntheticUserAgentTelemetryInitializer, Microsoft.AI.Web">
+      <!-- Extended list of bots:
+            search|spider|crawl|Bot|Monitor|BrowserMob|BingPreview|PagePeeker|WebThumb|URL2PNG|ZooShot|GomezA|Google SketchUp|Read Later|KTXN|KHTE|Keynote|Pingdom|AlwaysOn|zao|borg|oegp|silk|Xenu|zeal|NING|htdig|lycos|slurp|teoma|voila|yahoo|Sogou|CiBra|Nutch|Java|JNLP|Daumoa|Genieo|ichiro|larbin|pompos|Scrapy|snappy|speedy|vortex|favicon|indexer|Riddler|scooter|scraper|scrubby|WhatWeb|WinHTTP|voyager|archiver|Icarus6j|mogimogi|Netvibes|altavista|charlotte|findlinks|Retreiver|TLSProber|WordPress|wsr-agent|http client|Python-urllib|AppEngine-Google|semanticdiscovery|facebookexternalhit|web/snippet|Google-HTTP-Java-Client-->
+      <Filters>search|spider|crawl|Bot|Monitor|AlwaysOn</Filters>
+    </Add>
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Web.ClientIpHeaderTelemetryInitializer, Microsoft.AI.Web" />
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Web.AzureAppServiceRoleNameFromHostNameHeaderInitializer, Microsoft.AI.Web" />
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Web.OperationNameTelemetryInitializer, Microsoft.AI.Web" />
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Web.OperationCorrelationTelemetryInitializer, Microsoft.AI.Web" />
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Web.UserTelemetryInitializer, Microsoft.AI.Web" />
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Web.AuthenticatedUserIdTelemetryInitializer, Microsoft.AI.Web" />
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Web.AccountIdTelemetryInitializer, Microsoft.AI.Web" />
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Web.SessionTelemetryInitializer, Microsoft.AI.Web" />
+  </TelemetryInitializers>
+
+  <TelemetryModules xdt:Transform="InsertIfMissing">
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Web.RequestTrackingTelemetryModule, Microsoft.AI.Web">
+      <Handlers>
+        <!-- 
+        Add entries here to filter out additional handlers: 
+        
+        NOTE: handler configuration will be lost upon NuGet upgrade.
+        -->
+        <Add>Microsoft.VisualStudio.Web.PageInspector.Runtime.Tracing.RequestDataHttpHandler</Add>
+        <Add>System.Web.StaticFileHandler</Add>
+        <Add>System.Web.Handlers.AssemblyResourceLoader</Add>
+        <Add>System.Web.Optimization.BundleHandler</Add>
+        <Add>System.Web.Script.Services.ScriptHandlerFactory</Add>
+        <Add>System.Web.Handlers.TraceHandler</Add>
+        <Add>System.Web.Services.Discovery.DiscoveryRequestHandler</Add>
+        <Add>System.Web.HttpDebugHandler</Add>
+      </Handlers>
+    </Add>
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Web.ExceptionTrackingTelemetryModule, Microsoft.AI.Web" />
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.Web.AspNetDiagnosticTelemetryModule, Microsoft.AI.Web" />
+  </TelemetryModules>
+  <ApplicationIdProvider xdt:Transform="InsertIfMissing" Type="Microsoft.ApplicationInsights.Extensibility.Implementation.ApplicationId.ApplicationInsightsApplicationIdProvider, Microsoft.ApplicationInsights"/>
+  <TelemetryInitializers xdt:Transform="InsertIfMissing">
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.WindowsServer.AzureRoleEnvironmentTelemetryInitializer, Microsoft.AI.WindowsServer" />    
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.WindowsServer.BuildInfoConfigComponentVersionTelemetryInitializer, Microsoft.AI.WindowsServer" />
+  </TelemetryInitializers>
+
+  <TelemetryModules xdt:Transform="InsertIfMissing">
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.WindowsServer.AppServicesHeartbeatTelemetryModule, Microsoft.AI.WindowsServer" />
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.WindowsServer.AzureInstanceMetadataTelemetryModule, Microsoft.AI.WindowsServer">
+      <!--
+      Remove individual fields collected here by adding them to the ApplicationInsighs.HeartbeatProvider 
+      with the following syntax:
+      
+      <Add Type="Microsoft.ApplicationInsights.Extensibility.Implementation.Tracing.DiagnosticsTelemetryModule, Microsoft.ApplicationInsights">
+        <ExcludedHeartbeatProperties>
+          <Add>osType</Add>
+          <Add>location</Add>
+          <Add>name</Add>
+          <Add>offer</Add>
+          <Add>platformFaultDomain</Add>
+          <Add>platformUpdateDomain</Add>
+          <Add>publisher</Add>
+          <Add>sku</Add>
+          <Add>version</Add>
+          <Add>vmId</Add>
+          <Add>vmSize</Add>
+          <Add>subscriptionId</Add>
+          <Add>resourceGroupName</Add>
+          <Add>placementGroupId</Add>
+          <Add>tags</Add>
+          <Add>vmScaleSetName</Add>
+        </ExcludedHeartbeatProperties>
+      </Add>
+            
+      NOTE: exclusions will be lost upon upgrade.
+      -->
+    </Add>
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.WindowsServer.DeveloperModeWithDebuggerAttachedTelemetryModule, Microsoft.AI.WindowsServer" />
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.WindowsServer.UnhandledExceptionTelemetryModule, Microsoft.AI.WindowsServer" />
+    <Add xdt:Transform="InsertIfMissing" xdt:Locator="Match(Type)" Type="Microsoft.ApplicationInsights.WindowsServer.UnobservedExceptionTelemetryModule, Microsoft.AI.WindowsServer"><!--</Add>
+    <Add Type="Microsoft.ApplicationInsights.WindowsServer.FirstChanceExceptionStatisticsTelemetryModule, Microsoft.AI.WindowsServer">--></Add>
+  </TelemetryModules>
+  <TelemetryChannel xdt:Transform="Remove" />
+  <TelemetryProcessors xdt:Transform="Remove"/>
+
+
+  <TelemetrySinks xdt:Transform="InsertIfMissing">
+  </TelemetrySinks>
+
+  <TelemetrySinks xdt:Transform="InsertIfMissing">
+    <Add Name="default" xdt:Transform="InsertIfMissing">
+    </Add>
+  </TelemetrySinks>
+
+  <TelemetrySinks>
+    <Add Name="default" xdt:Transform="InsertIfMissing">
+    <TelemetryChannel xdt:Transform="Remove" />
+    <TelemetryChannel xdt:Transform="Insert" Type="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.ServerTelemetryChannel, Microsoft.AI.ServerTelemetryChannel" />
+
+    <TelemetryProcessors>
+      <Add Type="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.SamplingTelemetryProcessor, Microsoft.AI.ServerTelemetryChannel"
+           xdt:Transform="Remove"
+           xdt:Locator="Match(Type)">
+      </Add>
+    </TelemetryProcessors>
+
+    <TelemetryProcessors xdt:Transform="InsertIfMissing">
+      <Add Type="Microsoft.ApplicationInsights.Extensibility.AutocollectedMetricsExtractor, Microsoft.ApplicationInsights"
+           xdt:Transform="InsertIfMissing"
+           xdt:Locator="Match(Type)"/>
+    </TelemetryProcessors>
+    <TelemetryProcessors xdt:Transform="InsertIfMissing">
+      <Add Type="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.AdaptiveSamplingTelemetryProcessor, Microsoft.AI.ServerTelemetryChannel"
+         xdt:Transform="InsertIfMissing"
+         xdt:Locator="Condition(starts-with(@Type, 'Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.AdaptiveSamplingTelemetryProcessor') and count(./ExcludedTypes[text() = 'Event']) = 1)">
+        <MaxTelemetryItemsPerSecond>5</MaxTelemetryItemsPerSecond>
+        <ExcludedTypes>Event</ExcludedTypes>
+      </Add>
+    </TelemetryProcessors>
+    <TelemetryProcessors xdt:Transform="InsertIfMissing">
+      <Add Type="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.AdaptiveSamplingTelemetryProcessor, Microsoft.AI.ServerTelemetryChannel"
+         xdt:Transform="InsertIfMissing"
+          xdt:Locator="Condition(starts-with(@Type, 'Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.AdaptiveSamplingTelemetryProcessor') and count(./IncludedTypes[text() = 'Event']) = 1)">
+        <MaxTelemetryItemsPerSecond>5</MaxTelemetryItemsPerSecond>
+        <IncludedTypes>Event</IncludedTypes>
+      </Add>
+    </TelemetryProcessors>
+    </Add>
+  </TelemetrySinks>
+</ApplicationInsights>
