@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<appSettings configBuilders="SitecoreAppSettingsBuilder" xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <add key="AppInsightsKey" value="" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)" />
+  <add key="AppInsightsRoleName" value="" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)" />
+</appSettings>
