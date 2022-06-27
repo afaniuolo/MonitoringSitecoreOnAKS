@@ -4,46 +4,46 @@ bases:
 - configmaps
 images:
 - name: sitecore-xp1-cd
-  newName: alessandrositecore.azurecr.io/monitoring-sitecore-on-aks-xp1-cd
+  newName: your_registry/<compose_project_name>-xp1-cd
   newTag: latest
 - name: sitecore-xp1-cm
-  newName: alessandrositecore.azurecr.io/monitoring-sitecore-on-aks-xp1-cm
+  newName: your_registry/<compose_project_name>-xp1-cm
   newTag: latest
 - name: sitecore-xp1-id
-  newName: alessandrositecore.azurecr.io/monitoring-sitecore-on-aks-id
+  newName: your_registry/<compose_project_name>-id
   newTag: latest
 - name: sitecore-xp1-cortexprocessing
-  newName: alessandrositecore.azurecr.io/monitoring-sitecore-on-aks-xp1-cortexprocessing
+  newName: your_registry/<compose_project_name>-xp1-cortexprocessing
   newTag: latest
 - name: sitecore-xp1-cortexprocessingworker
-  newName: alessandrositecore.azurecr.io/monitoring-sitecore-on-aks-xp1-cortexprocessingworker
+  newName: your_registry/<compose_project_name>-xp1-cortexprocessingworker
   newTag: latest
 - name: sitecore-xp1-cortexreporting
-  newName: alessandrositecore.azurecr.io/monitoring-sitecore-on-aks-xp1-cortexreporting
+  newName: your_registry/<compose_project_name>-xp1-cortexreporting
   newTag: latest
 - name: sitecore-xp1-prc
-  newName: alessandrositecore.azurecr.io/monitoring-sitecore-on-aks-xp1-prc
+  newName: your_registry/<compose_project_name>-xp1-prc
   newTag: latest
 - name: sitecore-xp1-xdbautomation
-  newName: alessandrositecore.azurecr.io/monitoring-sitecore-on-aks-xp1-xdbautomation
+  newName: your_registry/<compose_project_name>-xp1-xdbautomation
   newTag: latest
 - name: sitecore-xp1-xdbautomationrpt
-  newName: alessandrositecore.azurecr.io/monitoring-sitecore-on-aks-xp1-xdbautomationrpt
+  newName: your_registry/<compose_project_name>-xp1-xdbautomationrpt
   newTag: latest
 - name: sitecore-xp1-xdbautomationworker
-  newName: alessandrositecore.azurecr.io/monitoring-sitecore-on-aks-xp1-xdbautomationworker
+  newName: your_registry/<compose_project_name>-xp1-xdbautomationworker
   newTag: latest
 - name: sitecore-xp1-xdbcollection
-  newName: alessandrositecore.azurecr.io/monitoring-sitecore-on-aks-xp1-xdbcollection
+  newName: your_registry/<compose_project_name>-xp1-xdbcollection
   newTag: latest
 - name: sitecore-xp1-xdbrefdata
-  newName: alessandrositecore.azurecr.io/monitoring-sitecore-on-aks-xp1-xdbrefdata
+  newName: your_registry/<compose_project_name>-xp1-xdbrefdata
   newTag: latest
 - name: sitecore-xp1-xdbsearch
-  newName: alessandrositecore.azurecr.io/monitoring-sitecore-on-aks-xp1-xdbsearch
+  newName: your_registry/<compose_project_name>-xp1-xdbsearch
   newTag: latest
 - name: sitecore-xp1-xdbsearchworker
-  newName: alessandrositecore.azurecr.io/monitoring-sitecore-on-aks-xp1-xdbsearchworker
+  newName: your_registry/<compose_project_name>-xp1-xdbsearchworker
   newTag: latest
 resources:
 - cm.yaml
