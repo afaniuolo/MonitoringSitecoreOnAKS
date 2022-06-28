@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Settings xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
   <Serilog>
-    <MinimumLevel>
-      <Default xdt:Transform="Replace">Debug</Default>
-    </MinimumLevel>
     <Properties>
       <Role xdt:Transform="InsertIfMissing">XConnect Collection Search</Role>
       <Tags xdt:Transform="InsertIfMissing"></Tags>
