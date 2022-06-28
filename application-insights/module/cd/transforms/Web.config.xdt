@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform" xmlns:asmv1="urn:schemas-microsoft-com:asm.v1">
+    <appSettings configBuilders="SitecoreAppSettingsBuilder">
+        <add key="storeSitecoreCountersInApplicationInsights:define" value="False" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+        <add key="useApplicationInsights:define" value="True" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+    </appSettings>
+    <system.webServer>
+        <modules runAllManagedModulesForAllRequests="true" xdt:Transform="InsertIfMissing">
+            <remove name="TelemetryCorrelationHttpModule" xdt:Transform="RemoveAll" xdt:Locator="Match(name)"/>
+            <add name="TelemetryCorrelationHttpModule" xdt:Transform="RemoveAll" xdt:Locator="Match(name)"/>
+            <remove name="TelemetryCorrelationHttpModule" xdt:Transform="InsertIfMissing" xdt:Locator="Match(name)" />
+            <add name="TelemetryCorrelationHttpModule" type="Microsoft.AspNet.TelemetryCorrelation.TelemetryCorrelationHttpModule, Microsoft.AspNet.TelemetryCorrelation" preCondition="managedHandler" xdt:Transform="InsertAfter(/configuration/system.webServer/modules/remove[@name='TelemetryCorrelationHttpModule'])" />
+            <remove name="ApplicationInsightsWebTracking" xdt:Transform="RemoveAll" xdt:Locator="Match(name)"/>
+            <add name="ApplicationInsightsWebTracking" xdt:Transform="RemoveAll" xdt:Locator="Match(name)"/>
+            <remove name="ApplicationInsightsWebTracking" xdt:Transform="InsertIfMissing" xdt:Locator="Match(name)"/>
+            <add name="ApplicationInsightsWebTracking" type="Microsoft.ApplicationInsights.Web.ApplicationInsightsHttpModule, Microsoft.AI.Web" preCondition="managedHandler" xdt:Transform="InsertAfter(/configuration/system.webServer/modules/remove[@name='ApplicationInsightsWebTracking'])" />
+        </modules>
+    </system.webServer>
+    <system.web xdt:Transform="InsertIfMissing">
+        <httpModules xdt:Transform="InsertIfMissing">
+            <add name="TelemetryCorrelationHttpModule" type="Microsoft.AspNet.TelemetryCorrelation.TelemetryCorrelationHttpModule, Microsoft.AspNet.TelemetryCorrelation" xdt:Transform="InsertIfMissing" />
+            <add name="ApplicationInsightsWebTracking" type="Microsoft.ApplicationInsights.Web.ApplicationInsightsHttpModule, Microsoft.AI.Web" xdt:Transform="InsertIfMissing" />
+        </httpModules>
+    </system.web>
+    <system.diagnostics xdt:Transform="InsertIfMissing">
+        <trace autoflush="true" indentsize="0" xdt:Transform="InsertIfMissing">
+            <listeners xdt:Transform="InsertIfMissing">
+                <add name="myAppInsightsListener" type="Microsoft.ApplicationInsights.TraceListener.ApplicationInsightsTraceListener, Microsoft.ApplicationInsights.TraceListener" xdt:Transform="InsertIfMissing" />
+            </listeners>
+        </trace>
+    </system.diagnostics>
+    <runtime>
+        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+            <dependentAssembly xdt:Transform="InsertIfMissing" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='Microsoft.AI.Agent.Intercept')">
+                <assemblyIdentity name="Microsoft.AI.Agent.Intercept" publicKeyToken="31bf3856ad364e35" culture="neutral" xmlns="urn:schemas-microsoft-com:asm.v1"/>
+                <bindingRedirect oldVersion="0.0.0.0-2.4.0.0" newVersion="2.4.0.0" xmlns="urn:schemas-microsoft-com:asm.v1"/>
+            </dependentAssembly>
+        </assemblyBinding>
+        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+            <dependentAssembly xdt:Transform="RemoveAll" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='Microsoft.ApplicationInsights')">
+            </dependentAssembly>
+        </assemblyBinding>
+        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+            <dependentAssembly xdt:Transform="InsertIfMissing" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='Microsoft.ApplicationInsights')">
+                <assemblyIdentity name="Microsoft.ApplicationInsights" publicKeyToken="31bf3856ad364e35" culture="neutral" xmlns="urn:schemas-microsoft-com:asm.v1" />
+                <bindingRedirect oldVersion="0.0.0.0-2.20.0.103" newVersion="2.20.0.103" xmlns="urn:schemas-microsoft-com:asm.v1" />
+            </dependentAssembly>
+        </assemblyBinding>
+        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+            <dependentAssembly xdt:Transform="RemoveAll" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='Microsoft.AspNet.TelemetryCorrelation')">
+            </dependentAssembly>
+        </assemblyBinding>
+        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+            <dependentAssembly xdt:Transform="InsertIfMissing" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='Microsoft.AspNet.TelemetryCorrelation')">
+                <assemblyIdentity name="Microsoft.AspNet.TelemetryCorrelation" publicKeyToken="31bf3856ad364e35" culture="neutral" xmlns="urn:schemas-microsoft-com:asm.v1" />
+                <bindingRedirect oldVersion="0.0.0.0-1.0.8.0" newVersion="1.0.8.0" xmlns="urn:schemas-microsoft-com:asm.v1" />
+            </dependentAssembly>
+        </assemblyBinding>
+        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+            <dependentAssembly xdt:Transform="RemoveAll" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='System.Diagnostics.DiagnosticSource')">
+            </dependentAssembly>
+        </assemblyBinding>
+        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+            <dependentAssembly xdt:Transform="InsertIfMissing" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='System.Diagnostics.DiagnosticSource')">
+                <assemblyIdentity name="System.Diagnostics.DiagnosticSource" publicKeyToken="cc7b13ffcd2ddd51" culture="neutral" xmlns="urn:schemas-microsoft-com:asm.v1" />
+                <bindingRedirect oldVersion="0.0.0.0-5.0.0.0" newVersion="5.0.0.0" xmlns="urn:schemas-microsoft-com:asm.v1" />
+            </dependentAssembly>
+        </assemblyBinding>
+    </runtime>
+</configuration>

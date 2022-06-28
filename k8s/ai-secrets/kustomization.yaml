@@ -1,0 +1,7 @@
+generatorOptions:
+  disableNameSuffixHash: true
+secretGenerator:
+- name: application-insights
+  files:
+  - application-insights-instrumentation-key.txt
+  - application-insights-connection-string.txt

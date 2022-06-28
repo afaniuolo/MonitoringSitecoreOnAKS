@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Settings>
+    <!--
+    Provides default configuration for component services for the application    
+        
+    NOTE:
+      When registering a type you can configure the following values:
+        Type      (Required): The full type reference of the instance being registered
+        As        (Optional): The type the instance may be resolved as (defaults to Type if not provided)
+        LifeTime  (Optional): The lifetime of instance. Can be Singleton or Transient. (defaults to Singleton)
+        Options   (Optional): If the type contains a constructor that receives IConfiguration, you can provide
+                              additional values here to match the resulting type of options for that type.
+    -->
+    <Sitecore>
+        <XConnect>
+            <Diagnostics>
+                <Services>
+                    <Sitecore.XConnect.Diagnostics.ApplicationInsights.AppInsightsInitializer>
+                        <Type>Sitecore.XConnect.Diagnostics.ApplicationInsights.AppInsightsInitializer, Sitecore.XConnect.Diagnostics.ApplicationInsights</Type>
+                        <As>Sitecore.XConnect.DependencyInjection.Abstractions.IApplicationInitializer, Sitecore.XConnect.DependencyInjection</As>
+                        <LifeTime>Singleton</LifeTime>
+                    </Sitecore.XConnect.Diagnostics.ApplicationInsights.AppInsightsInitializer>
+                    <Sitecore.XConnect.Diagnostics.ApplicationInsights.IAppInsightsConfigurationOptions>
+                        <Type>Sitecore.XConnect.Diagnostics.ApplicationInsights.AppInsightsConfigurationOptions, Sitecore.XConnect.Diagnostics.ApplicationInsights</Type>
+                        <As>Sitecore.XConnect.Diagnostics.ApplicationInsights.IAppInsightsConfigurationOptions, Sitecore.XConnect.Diagnostics.ApplicationInsights</As>
+                        <LifeTime>Singleton</LifeTime>
+                        <Options>
+                            <InstrumentationKeyAppSettingKey>AppInsightsKey</InstrumentationKeyAppSettingKey>
+                            <RoleNameAppSettingKey>AppInsightsRoleName</RoleNameAppSettingKey>
+                        </Options>
+                    </Sitecore.XConnect.Diagnostics.ApplicationInsights.IAppInsightsConfigurationOptions>
+                </Services>
+            </Diagnostics>
+        </XConnect>
+    </Sitecore>
+</Settings>

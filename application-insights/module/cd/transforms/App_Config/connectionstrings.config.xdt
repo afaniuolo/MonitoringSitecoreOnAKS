@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<connectionStrings configBuilders="SitecoreConnectionStringsBuilder" xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform" xmlns:asmv1="urn:schemas-microsoft-com:asm.v1">
+    <add name="appinsights.instrumentationkey" connectionString="" xdt:Transform="InsertIfMissing" xdt:Locator="Match(name)"/>
+</connectionStrings>

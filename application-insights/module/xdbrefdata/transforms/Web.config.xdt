@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform" xmlns:asmv1="urn:schemas-microsoft-com:asm.v1">
+  <runtime>
+        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+            <dependentAssembly xdt:Transform="InsertIfMissing" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='Microsoft.AI.Agent.Intercept')">
+                <assemblyIdentity name="Microsoft.AI.Agent.Intercept" publicKeyToken="31bf3856ad364e35" culture="neutral" xmlns="urn:schemas-microsoft-com:asm.v1"/>
+                <bindingRedirect oldVersion="0.0.0.0-2.4.0.0" newVersion="2.4.0.0" xmlns="urn:schemas-microsoft-com:asm.v1"/>
+            </dependentAssembly>
+        </assemblyBinding>
+        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+            <dependentAssembly xdt:Transform="RemoveAll" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='Microsoft.ApplicationInsights')">
+            </dependentAssembly>
+        </assemblyBinding>
+        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+            <dependentAssembly xdt:Transform="InsertIfMissing" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='Microsoft.ApplicationInsights')">
+                <assemblyIdentity name="Microsoft.ApplicationInsights" publicKeyToken="31bf3856ad364e35" culture="neutral" xmlns="urn:schemas-microsoft-com:asm.v1" />
+                <bindingRedirect oldVersion="0.0.0.0-2.20.0.103" newVersion="2.20.0.103" xmlns="urn:schemas-microsoft-com:asm.v1" />
+            </dependentAssembly>
+        </assemblyBinding>
+        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+            <dependentAssembly xdt:Transform="RemoveAll" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='Microsoft.AI.DependencyCollector')">
+            </dependentAssembly>
+        </assemblyBinding>
+        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+            <dependentAssembly xdt:Transform="InsertIfMissing" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='Microsoft.AI.DependencyCollector')">
+                <assemblyIdentity name="Microsoft.AI.DependencyCollector" publicKeyToken="31bf3856ad364e35" culture="neutral" xmlns="urn:schemas-microsoft-com:asm.v1" />
+                <bindingRedirect oldVersion="0.0.0.0-2.20.0.103" newVersion="2.20.0.103" xmlns="urn:schemas-microsoft-com:asm.v1" />
+            </dependentAssembly>
+        </assemblyBinding>
+        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+            <dependentAssembly xdt:Transform="RemoveAll" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='System.Diagnostics.DiagnosticSource')">
+            </dependentAssembly>
+        </assemblyBinding>
+        <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+            <dependentAssembly xdt:Transform="InsertIfMissing" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='System.Diagnostics.DiagnosticSource')">
+                <assemblyIdentity name="System.Diagnostics.DiagnosticSource" publicKeyToken="cc7b13ffcd2ddd51" culture="neutral" xmlns="urn:schemas-microsoft-com:asm.v1" />
+                <bindingRedirect oldVersion="0.0.0.0-5.0.0.0" newVersion="5.0.0.0" xmlns="urn:schemas-microsoft-com:asm.v1" />
+            </dependentAssembly>
+        </assemblyBinding>
+    </runtime>
+</configuration>
